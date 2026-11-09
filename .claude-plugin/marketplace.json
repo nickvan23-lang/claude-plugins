@@ -1,0 +1,25 @@
+{
+  "name": "getseekx",
+  "owner": { "name": "Nicholas Vandervelden", "url": "https://getseekx.com" },
+  "metadata": { "description": "Seek X and Wayloom: hosted web research and browser-task tools for Claude Code." },
+  "plugins": [
+    {
+      "name": "seek-x",
+      "source": "./plugins/seek-x",
+      "description": "Search, read, map, batch, crawl and extract web information with your Seek X account.",
+      "version": "0.8.10",
+      "category": "research",
+      "keywords": ["web", "search", "scraping", "research", "extraction"],
+      "homepage": "https://getseekx.com"
+    },
+    {
+      "name": "wayloom",
+      "source": "./plugins/wayloom",
+      "description": "Run account-linked browser tasks, read rendered pages, and inspect metered usage and results.",
+      "version": "0.2.4",
+      "category": "productivity",
+      "keywords": ["browser", "automation", "extraction"],
+      "homepage": "https://wayloom.getseekx.com"
+    }
+  ]
+}

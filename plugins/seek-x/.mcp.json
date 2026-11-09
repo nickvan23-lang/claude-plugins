@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "seek-x": { "type": "http", "url": "https://getseekx.com/mcp" }
+  }
+}

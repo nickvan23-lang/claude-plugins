@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "wayloom": { "type": "http", "url": "https://wayloom.getseekx.com/mcp" }
+  }
+}

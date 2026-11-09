@@ -1,0 +1,9 @@
+{
+  "name": "seek-x",
+  "version": "0.8.10",
+  "description": "Search, read, map, batch, crawl and extract web information with your Seek X account.",
+  "author": { "name": "Nicholas Vandervelden", "url": "https://getseekx.com" },
+  "homepage": "https://getseekx.com",
+  "license": "Proprietary",
+  "keywords": ["web", "search", "scraping", "research", "extraction"]
+}
