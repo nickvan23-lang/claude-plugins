@@ -6,7 +6,7 @@
 /plugin install wayloom@getseekx
 ```
 
-Both work immediately as free guest trials. Run `/mcp` to sign in to your own account.
+Both work immediately as free guest trials; no signup needed.
 
 | Plugin | What it does |
 | --- | --- |
