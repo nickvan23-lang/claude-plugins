@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Seek X search</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--color-text-primary, #173433); background: var(--color-background-primary, #fff); color-scheme: light dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1120px; margin: auto; padding: 18px; }
+    header, .brand, .tools, .capture-meta { display: flex; align-items: center; gap: 10px; }
+    header { justify-content: space-between; }
+    .brand strong { font-size: 17px; }
+    .mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #dff4eb; color: #08634e; font-size: 23px; }
+    #status, #frame-state { padding: 5px 9px; border: 1px solid #b9d4cb; border-radius: 16px; font-size: 11px; white-space: nowrap; }
+    h1 { margin: 15px 0; font-size: 17px; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; }
+    .tools { flex-wrap: wrap; margin: 12px 0; }
+    #connection { flex: 1; min-width: 120px; font-size: 12px; color: var(--color-text-secondary, #657a79); }
+    button { padding: 8px 11px; border: 1px solid #b9d4cb; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    #download { background: #08634e; border-color: #08634e; color: #fff; font-weight: 600; }
+    button:focus-visible, a:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 2px solid #16896a; outline-offset: 3px; }
+    #screen { border: 1px solid #b9d4cb; border-radius: 12px; overflow: hidden; background: var(--color-background-secondary, #f4f8f6); }
+    figure { margin: 0; }
+    #frame { display: block; width: 100%; max-height: 760px; object-fit: contain; background: #edf4f1; }
+    figcaption { padding: 11px 13px; background: var(--color-background-primary, #fff); border-top: 1px solid #dce7e3; }
+    #frame-url { display: block; overflow-wrap: anywhere; font-size: 12px; color: inherit; text-decoration: none; margin-bottom: 7px; }
+    #frame-url:hover { text-decoration: underline; }
+    .capture-meta { justify-content: space-between; flex-wrap: wrap; font-size: 11px; color: var(--color-text-secondary, #657a79); }
+    #frame-state[data-stale="true"] { border-color: #bf9259; color: var(--color-text-warning, #80531d); }
+    #empty-screen { min-height: 240px; padding: 60px 20px; display: grid; align-content: center; justify-items: center; gap: 10px; text-align: center; color: var(--color-text-secondary, #657a79); }
+    #empty-screen strong { color: var(--color-text-primary, #173433); font-size: 15px; }
+    #empty-screen p { max-width: 470px; margin: 0; font-size: 13px; line-height: 1.6; }
+    #notice, #export-status { margin: 9px 0; color: var(--color-text-secondary, #657a79); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    details { margin-top: 12px; border: 1px solid #dce7e3; border-radius: 9px; }
+    summary { padding: 12px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .detail-body { padding: 0 12px 12px; }
+    ol { list-style: none; padding: 0; margin: 0; max-height: 230px; overflow: auto; border-left: 2px solid #b9d4cb; }
+    li { padding: 6px 0 6px 12px; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+    li small { display: block; color: var(--color-text-secondary, #657a79); }
+    .result { padding: 12px 0; border-top: 1px solid #dce7e3; }
+    .result:first-child { border-top: 0; }
+    .result a, .result strong { font-size: 14px; color: inherit; font-weight: 600; }
+    .result small { display: block; margin-top: 5px; color: var(--color-text-secondary, #657a79); font-size: 11px; overflow-wrap: anywhere; }
+    .result p { margin: 7px 0 0; font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .warning { color: var(--color-text-secondary, #657a79); font-size: 12px; }
+    #markdown-preview { display: block; width: 100%; min-height: 200px; padding: 10px; border: 1px solid #b9d4cb; border-radius: 7px; background: var(--color-background-primary, #fff); color: inherit; font: 12px/1.6 ui-monospace, monospace; resize: vertical; }
+    footer { margin-top: 14px; font-size: 11px; line-height: 1.5; color: var(--color-text-secondary, #657a79); }
+    [hidden] { display: none !important; }
+    @media (max-width: 520px) { main { padding: 12px; } h1 { font-size: 15px; } #connection { flex-basis: 100%; } #empty-screen { min-height: 200px; padding: 35px 15px; } .tools { gap: 7px; } }
+    @media (prefers-color-scheme: dark) { :root { color: #e6f0ec; background: #172321; } #screen, #frame { background: #1e302a; } #empty-screen strong { color: #e6f0ec; } #connection, #empty-screen, #notice, #export-status, .capture-meta, li small, .result small, .warning, footer { color: var(--color-text-secondary, #a9bbb5); } details, .result, figcaption { border-color: #354a43; } #frame-state[data-stale="true"] { color: var(--color-text-warning, #eac08e); } }
+  </style>
+</head>
+<body>
+<main id="app">
+  <header><div class="brand"><span class="mark" aria-hidden="true">↗</span><strong>Seek X</strong></div><span id="status" role="status">Connecting</span></header>
+  <h1 id="query">Your search will appear here</h1>
+  <section id="screen" aria-label="Actual search browser capture">
+    <figure id="capture" hidden>
+      <img id="frame" alt="Actual browser viewport captured during this search">
+      <figcaption>
+        <a id="frame-url" target="_blank" rel="noopener noreferrer"></a>
+        <div class="capture-meta"><time id="capture-time"></time><span id="frame-state"></span></div>
+      </figcaption>
+    </figure>
+    <div id="empty-screen"><strong id="empty-title">Waiting for a browser capture</strong><p id="empty-description">Only actual captured screens appear here. Some searches return source results without a browser image.</p></div>
+  </section>
+  <div class="tools"><span id="connection">Connecting to Seek X</span><button id="pause" disabled>Pause updates</button><button id="refresh" disabled>Refresh</button><button id="download" disabled>Download .md</button></div>
+  <p id="notice" role="status">Waiting for the search.</p>
+  <p id="export-status" role="status">Markdown will be prepared when the search finishes.</p>
+  <details id="activity"><summary>Search activity</summary><div class="detail-body"><ol id="events"><li>Waiting for a search.</li></ol></div></details>
+  <details id="results-section" hidden><summary id="results-heading">Sources found</summary><div class="detail-body" id="results"></div></details>
+  <details id="markdown-section" hidden><summary>Markdown preview</summary><div class="detail-body"><textarea id="markdown-preview" readonly aria-label="Prepared search results in Markdown"></textarea></div></details>
+  <footer id="footer">Updates read progress without repeating the search.</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const pending = new Map();
+  const FRAME_STALE_MS = 10000;
+  let nextId = 1, searchId = null, generation = 0, initialized = false, canPoll = false, canDownload = false;
+  let disposed = false, paused = false, status = 'waiting', timer, resizeTimer, captureTimer, initial, observer;
+  let pollTask = null, downloadTask = null, pollAfterMs = 1800, lastUpdateMs = 0, expectedQuery = null;
+  let currentFrame = null, frameSequence = 0, resultSequence = 0, retainedFrame = false;
+  let markdown = '', filename = 'seek-x-results.md';
+
+  function text(id, value) { $(id).textContent = String(value ?? ''); }
+  function stop() { clearTimeout(timer); }
+  function request(method, params) {
+    if (disposed || parent === window || pending.size >= 8) return Promise.reject(Error('Host unavailable'));
+    const id = nextId++;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { pending.delete(id); reject(Error('Host timeout')); }, 15000);
+      pending.set(id, { resolve, reject, timeout });
+      parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+    });
+  }
+  function controls() {
+    $('pause').disabled = disposed || !initialized || !canPoll || status !== 'running';
+    $('refresh').disabled = disposed || !initialized || !canPoll || !searchId || !!pollTask;
+    $('download').disabled = disposed || !initialized || !canDownload || !markdown || !!downloadTask;
+    text('pause', paused ? 'Resume updates' : 'Pause updates');
+    text('download', downloadTask ? 'Requesting download…' : 'Download .md');
+  }
+  function schedule() {
+    stop();
+    if (initialized && canPoll && !disposed && !paused && !document.hidden && searchId && status === 'running' && !pollTask) {
+      timer = setTimeout(refresh, pollAfterMs);
+    }
+  }
+  function safeUrl(raw) {
+    if (typeof raw !== 'string') return null;
+    try { const url = new URL(raw); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null; }
+    catch { return null; }
+  }
+  function dateValue(raw) { return typeof raw === 'string' && Number.isFinite(Date.parse(raw)) ? Date.parse(raw) : null; }
+  function clearPixels() {
+    frameSequence++;
+    currentFrame = null;
+    retainedFrame = false;
+    clearInterval(captureTimer);
+    $('frame').removeAttribute('src');
+    $('capture').hidden = true;
+    $('empty-screen').hidden = false;
+    $('frame-url').removeAttribute('href');
+    text('frame-url', '');
+    text('capture-time', '');
+    $('capture-time').removeAttribute('datetime');
+    text('frame-state', '');
+    updateFooter();
+  }
+  function updateFooter() {
+    text('footer', currentFrame
+      ? 'Actual captured viewport. Updates read progress without repeating the search.'
+      : 'No browser image is displayed. Search events and source results are available in the details.');
+  }
+  function updateCaptureLabel() {
+    if (!currentFrame || disposed) return;
+    const stale = Date.now() - currentFrame.time > FRAME_STALE_MS;
+    $('frame-state').dataset.stale = String(stale || retainedFrame);
+    text('frame-state', status === 'completed' ? 'Last captured view · search complete'
+      : stale ? 'Earlier capture · awaiting a newer frame'
+      : retainedFrame ? 'Last captured view · no new frame in latest update'
+      : 'Captured browser view');
+    text('capture-time', 'Captured ' + new Date(currentFrame.time).toLocaleString());
+    $('capture-time').dateTime = currentFrame.capturedAt;
+    updateFooter();
+  }
+  function acceptPreview(preview, serial) {
+    const href = safeUrl(preview?.url), time = dateValue(preview?.capturedAt);
+    const valid = href && time !== null && typeof preview?.image === 'string' && preview.image.length <= 218456
+      && /^\/9j\/[A-Za-z0-9+/]*={0,2}$/.test(preview.image);
+    if (!valid || currentFrame && time < currentFrame.time) {
+      retainedFrame = !!currentFrame;
+      updateCaptureLabel();
+      return;
+    }
+    if (currentFrame && currentFrame.image === preview.image && currentFrame.capturedAt === preview.capturedAt && currentFrame.url === href) {
+      retainedFrame = serial !== resultSequence;
+      updateCaptureLabel();
+      return;
+    }
+    // Decode off screen first: a malformed new image must not erase a valid older frame.
+    const image = new Image(), epoch = generation, id = searchId, sequence = ++frameSequence;
+    image.onload = () => {
+      if (disposed || epoch !== generation || id !== searchId || sequence !== frameSequence || ['failed', 'unavailable'].includes(status)) return;
+      currentFrame = { image: preview.image, capturedAt: preview.capturedAt, time, url: href };
+      retainedFrame = serial !== resultSequence;
+      $('frame').src = image.src;
+      $('capture').hidden = false;
+      $('empty-screen').hidden = true;
+      $('frame-url').href = href;
+      text('frame-url', href);
+      updateCaptureLabel();
+      clearInterval(captureTimer);
+      captureTimer = setInterval(updateCaptureLabel, 2000);
+    };
+    image.onerror = () => {
+      if (disposed || epoch !== generation || id !== searchId || sequence !== frameSequence) return;
+      retainedFrame = !!currentFrame;
+      updateCaptureLabel();
+      updateFooter();
+    };
+    image.src = 'data:image/jpeg;base64,' + preview.image;
+  }
+  function resetExport() {
+    markdown = '';
+    filename = 'seek-x-results.md';
+    downloadTask = null;
+    $('markdown-preview').value = '';
+    $('markdown-section').hidden = true;
+    $('markdown-section').open = false;
+    text('export-status', 'Markdown will be prepared when the search finishes.');
+  }
+  function resetSearch(id = null) {
+    generation++;
+    stop();
+    pollTask = null;
+    searchId = id;
+    paused = false;
+    status = 'waiting';
+    lastUpdateMs = 0;
+    resultSequence = 0;
+    pollAfterMs = 1800;
+    clearPixels();
+    resetExport();
+    $('results').replaceChildren();
+    $('results-section').hidden = true;
+    $('results-section').open = false;
+    $('events').replaceChildren();
+    $('activity').open = false;
+    text('empty-title', 'Waiting for a browser capture');
+    text('empty-description', 'Only actual captured screens appear here. Some searches return source results without a browser image.');
+  }
+  function inline(value) { return String(value ?? '').replace(/\\/g, '\\\\').replace(/[`*_{}\[\]<>#!|]/g, '\\$&').replace(/\r?\n/g, ' '); }
+  function quoted(value) { return String(value ?? '').split(/\r?\n/).map(line => '> ' + inline(line)).join('\n'); }
+  function warningText(value) { return typeof value === 'string' ? value : JSON.stringify(value); }
+  function sourceWarnings(item) {
+    const warnings = [];
+    if (item?.warning) warnings.push(warningText(item.warning));
+    for (const value of Array.isArray(item?.warnings) ? item.warnings : []) warnings.push(warningText(value));
+    const metadata = item?.metadata || {};
+    const statusCode = Number(metadata.statusCode ?? item?.statusCode);
+    if (Number.isFinite(statusCode) && (statusCode < 200 || statusCode >= 300)) warnings.push('HTTP status ' + statusCode + '; this is not a verified successful page capture.');
+    const fallback = metadata.renderingFallback ?? item?.renderingFallback;
+    if (fallback) warnings.push('Rendering fallback: ' + warningText(fallback) + '. Source coverage may be incomplete.');
+    if (item?.truncated === true || metadata.truncated === true || item?.coverage?.truncated === true || item?.contentCoverage?.truncated === true) warnings.push('Source content was reported truncated.');
+    if (item?.pagination?.hasMore === true) warnings.push('Additional source content remains unread.');
+    return warnings;
+  }
+  function createMarkdown(activity, rows) {
+    const lines = ['# Seek X search results', '', '**Query:** ' + inline(activity.query), '**Status:** ' + inline(activity.status)];
+    if (dateValue(activity.createdAt) !== null) lines.push('**Search created:** ' + inline(activity.createdAt));
+    if (dateValue(activity.updatedAt) !== null) lines.push('**Search updated:** ' + inline(activity.updatedAt));
+    lines.push('', '**Coverage:** Search-result snippets. The linked pages have not been exported by this screen.', '');
+    if (!rows.length) lines.push('No sources were returned.', '');
+    rows.forEach((item, index) => {
+      const href = safeUrl(item?.url);
+      lines.push('## ' + (index + 1) + '. ' + inline(item?.title || href || 'Untitled source'), '');
+      lines.push(href ? '**Source:** <' + href.replace(/>/g, '%3E') + '>' : '**Source:** No supported HTTP(S) URL was returned.', '');
+      lines.push('### Search snippet', '', item?.description ? quoted(item.description) : 'No snippet was returned.', '');
+      for (const warning of sourceWarnings(item)) lines.push('**Source warning:** ' + inline(warning), '');
+    });
+    const warnings = Array.isArray(activity.result?.search?.warnings) ? activity.result.search.warnings : [];
+    if (warnings.length) {
+      lines.push('## Search warnings', '');
+      for (const warning of warnings) lines.push('- ' + inline(warningText(warning)));
+      lines.push('');
+    }
+    if (activity.result?.success === false || activity.result?.error) {
+      lines.push('## Search diagnostic', '', inline(activity.result.error ? warningText(activity.result.error) : 'The search returned an unsuccessful result.'), '');
+    }
+    return lines.join('\n').replace(/\n*$/, '\n');
+  }
+  function prepareExport(activity, rows) {
+    if (status !== 'completed' || !activity.result || typeof activity.result !== 'object') {
+      resetExport();
+      if (status === 'failed') text('export-status', 'No completed source result is available to export.');
+      else if (status === 'completed') text('export-status', 'The search completed without result data. No Markdown file was prepared.');
+      return;
+    }
+    markdown = createMarkdown(activity, rows);
+    const slug = String(activity.query || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64).replace(/-$/, '');
+    filename = 'seek-x-' + (slug || 'results') + '.md';
+    $('markdown-preview').value = markdown;
+    $('markdown-section').hidden = false;
+    text('export-status', canDownload ? 'Markdown is ready. Download contains the returned search snippets and source links.'
+      : 'Markdown is ready in the preview. This host does not offer downloads; the assistant can save the file.');
+  }
+  function showResults(activity) {
+    const rows = Array.isArray(activity.result?.data?.web) ? activity.result.data.web : [];
+    $('results').replaceChildren();
+    for (const item of rows) {
+      const href = safeUrl(item?.url), row = document.createElement('article');
+      row.className = 'result';
+      const heading = document.createElement(href ? 'a' : 'strong');
+      if (href) { heading.href = href; heading.target = '_blank'; heading.rel = 'noopener noreferrer'; }
+      heading.textContent = item?.title || href || 'Untitled source';
+      const url = document.createElement('small');
+      url.textContent = href || 'No supported HTTP(S) source URL';
+      const description = document.createElement('p');
+      description.textContent = item?.description || 'No search snippet returned.';
+      row.append(heading, url, description);
+      for (const value of sourceWarnings(item)) { const warning = document.createElement('p'); warning.className = 'warning'; warning.textContent = value; row.append(warning); }
+      $('results').append(row);
+    }
+    for (const warning of Array.isArray(activity.result?.search?.warnings) ? activity.result.search.warnings : []) {
+      const node = document.createElement('p'); node.className = 'warning'; node.textContent = warningText(warning); $('results').append(node);
+    }
+    $('results-section').hidden = status !== 'completed';
+    text('results-heading', rows.length ? rows.length + ' sources · search snippets' : 'No sources found');
+    prepareExport(activity, rows);
+  }
+  function unavailable() {
+    status = 'unavailable';
+    stop();
+    clearPixels();
+    resetExport();
+    $('results').replaceChildren();
+    $('results-section').hidden = true;
+    text('status', 'Unavailable');
+    text('notice', 'Search progress could not be loaded. Refresh reads progress without submitting another search.');
+    text('empty-title', 'Browser capture unavailable');
+    text('export-status', 'No verified result is available to export.');
+    controls();
+  }
+  function apply(result) {
+    const data = result?.structuredContent, activity = data?.activity;
+    if (result?.isError || !data || data.kind !== 'search_activity' || !activity || typeof activity.id !== 'string' || !activity.id) { unavailable(); return; }
+    if (searchId && activity.id !== searchId) return;
+    const updated = dateValue(activity.updatedAt);
+    if (updated !== null && updated < lastUpdateMs || ['completed', 'failed'].includes(status) && activity.status === 'running') return;
+    if (!['running', 'completed', 'failed'].includes(activity.status)) { unavailable(); return; }
+    if (updated !== null) lastUpdateMs = updated;
+    searchId = activity.id;
+    status = activity.status;
+    resultSequence++;
+    const offeredDelay = data.pollAfterMs ?? activity.pollAfterMs;
+    if (Number.isFinite(offeredDelay) && offeredDelay >= 0) pollAfterMs = Math.max(250, offeredDelay);
+    text('query', activity.query);
+    text('status', { running: 'Searching', completed: 'Completed', failed: 'Failed' }[status]);
+    text('notice', status === 'running' ? 'Following the actual search.' : status === 'failed' ? activity.error || 'This search failed.' : 'Search complete. Markdown is prepared from the returned sources.');
+    $('events').replaceChildren();
+    for (const event of Array.isArray(activity.events) ? activity.events : []) {
+      const row = document.createElement('li'); row.textContent = event?.stage || '';
+      if (event?.url) { const url = document.createElement('small'); url.textContent = event.url; row.append(url); }
+      $('events').append(row);
+    }
+    $('events').scrollTop = $('events').scrollHeight;
+    if (status === 'failed') clearPixels();
+    else acceptPreview(result._meta?.preview, resultSequence);
+    if (status !== 'running') text('empty-title', status === 'failed' ? 'Search failed' : 'No browser capture was returned');
+    showResults(activity);
+    updateCaptureLabel();
+    updateFooter();
+    controls();
+    schedule();
+  }
+  function receive(result) {
+    if (!initialized) { initial = result; return; }
+    const activity = result?.structuredContent?.activity;
+    if (expectedQuery !== null && activity && activity.query !== expectedQuery) return;
+    if (typeof activity?.id === 'string' && activity.id && activity.id !== searchId) resetSearch(activity.id);
+    expectedQuery = null;
+    apply(result);
+  }
+  async function refresh() {
+    if (!initialized || !canPoll || !searchId || pollTask || disposed) return;
+    stop();
+    const task = { epoch: generation, id: searchId };
+    pollTask = task;
+    controls();
+    try {
+      const result = await request('tools/call', { name: 'search_status', arguments: { id: task.id } });
+      if (task.epoch === generation && !disposed) apply(result);
+    } catch {
+      if (task.epoch === generation && !disposed) {
+        unavailable();
+        text('notice', 'The connection paused. Refresh to read progress; the search is not repeated.');
+      }
+    } finally {
+      if (pollTask === task) { pollTask = null; if (!disposed) { controls(); schedule(); } }
+    }
+  }
+  async function download() {
+    if (!initialized || !canDownload || !markdown || downloadTask || disposed) return;
+    const task = { epoch: generation, id: searchId };
+    downloadTask = task;
+    controls();
+    try {
+      // Official MCP Apps host-mediated download; direct iframe/Blob downloads are blocked.
+      // https://apps.extensions.modelcontextprotocol.io/api/interfaces/app.McpUiDownloadFileRequest.html
+      const result = await request('ui/download-file', { contents: [{ type: 'resource', resource: { uri: 'file:///' + filename, mimeType: 'text/markdown', text: markdown } }] });
+      if (task.epoch !== generation || disposed) return;
+      if (!result || typeof result !== 'object' || Array.isArray(result) || result.isError) throw Error('Download was not confirmed');
+      text('export-status', 'The host accepted the Markdown download request.');
+    } catch {
+      if (task.epoch === generation && !disposed) {
+        text('export-status', 'The host did not confirm a download. The Markdown preview remains available.');
+        $('markdown-section').open = true;
+      }
+    } finally {
+      if (downloadTask === task) { downloadTask = null; if (!disposed) controls(); }
+    }
+  }
+  function destroy() {
+    if (disposed) return;
+    disposed = true;
+    generation++;
+    stop();
+    clearTimeout(resizeTimer);
+    clearInterval(captureTimer);
+    observer?.disconnect();
+    clearPixels();
+    resetExport();
+    for (const item of pending.values()) { clearTimeout(item.timeout); item.reject(Error('View closed')); }
+    pending.clear();
+    controls();
+  }
+  window.addEventListener('message', event => {
+    if (event.source !== parent || parent === window || disposed || event.data?.jsonrpc !== '2.0') return;
+    const message = event.data;
+    if (message.id !== undefined && !message.method && pending.has(message.id)) {
+      const item = pending.get(message.id); pending.delete(message.id); clearTimeout(item.timeout);
+      message.error ? item.reject(Error('Host request failed')) : item.resolve(message.result);
+    } else if (message.method === 'ui/notifications/tool-result') receive(message.params);
+    else if (message.method === 'ui/notifications/tool-input') {
+      initial = null;
+      resetSearch();
+      expectedQuery = typeof message.params?.arguments?.query === 'string' ? message.params.arguments.query : null;
+      status = 'starting';
+      text('query', expectedQuery || 'Loading search');
+      text('status', 'Starting');
+      text('notice', 'Starting the requested search.');
+      controls();
+    } else if (message.method === 'ui/resource-teardown') {
+      if (message.id !== undefined) parent.postMessage({ jsonrpc: '2.0', id: message.id, result: {} }, '*');
+      destroy();
+    } else if (message.method === 'ui/notifications/tool-cancelled') {
+      paused = true; stop(); text('notice', 'Updates paused. The accepted search may still be running.'); controls();
+    }
+  });
+  $('refresh').onclick = refresh;
+  $('pause').onclick = () => { paused = !paused; stop(); controls(); if (!paused) refresh(); };
+  $('download').onclick = download;
+  $('frame').onerror = () => { clearPixels(); text('empty-title', 'Browser capture could not be displayed'); };
+  document.addEventListener('visibilitychange', () => { stop(); if (!document.hidden && !paused && status === 'running') refresh(); });
+  observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (initialized && !disposed) parent.postMessage({ jsonrpc: '2.0', method: 'ui/notifications/size-changed', params: { width: document.documentElement.clientWidth, height: $('app').scrollHeight } }, '*'); }, 100);
+  }) : null;
+  observer?.observe($('app'));
+  window.addEventListener('pagehide', destroy, { once: true });
+  if (parent === window) { text('connection', 'Open in an MCP Apps host'); text('status', 'Host required'); return; }
+  request('ui/initialize', { protocolVersion: '2026-01-26', appInfo: { name: 'seek-x-search', version: '1.0.1' }, appCapabilities: {} }).then(result => {
+    if (disposed) return;
+    initialized = true;
+    canPoll = !!result?.hostCapabilities?.serverTools;
+    canDownload = !!result?.hostCapabilities?.downloadFile;
+    text('connection', canPoll ? 'Connected to Seek X' : 'Search snapshot · automatic updates unavailable');
+    parent.postMessage({ jsonrpc: '2.0', method: 'ui/notifications/initialized', params: {} }, '*');
+    controls();
+    if (initial) { const snapshot = initial; initial = null; receive(snapshot); }
+  }).catch(() => {
+    if (!disposed) { text('connection', 'Reconnect Seek X'); text('status', 'Unavailable'); text('notice', 'The host connection could not be initialized.'); }
+  });
+})();
+</script>
+</body>
+</html>

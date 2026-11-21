@@ -7,7 +7,7 @@
       "name": "seek-x",
       "source": "./plugins/seek-x",
       "description": "Search, read, map, batch, crawl and extract web information with your Seek X account.",
-      "version": "0.8.10",
+      "version": "0.8.11",
       "category": "research",
       "keywords": ["web", "search", "scraping", "research", "extraction"],
       "homepage": "https://getseekx.com"
