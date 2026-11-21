@@ -16,7 +16,7 @@
       "name": "wayloom",
       "source": "./plugins/wayloom",
       "description": "Run account-linked browser tasks, read rendered pages, and inspect metered usage and results.",
-      "version": "0.2.4",
+      "version": "0.2.5",
       "category": "productivity",
       "keywords": ["browser", "automation", "extraction"],
       "homepage": "https://wayloom.getseekx.com"

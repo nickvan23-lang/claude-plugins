@@ -4,6 +4,19 @@ Built-in rendered page extraction records a private capture receipt, then compar
 
 `coverage.result_complete` means every returned aggregate was checked. `all_fields_observed` means the capture was intact and all aggregates matched readback in the same document. `source_complete_within_capture_limits` requires intact matching readback, no capture truncation, and settled, untruncated readiness sampling. It is not whole-site coverage. `acquisition.ready` is false for a timeout or sampler limit and null when readiness was not observed; those conditions stay visible even when every returned value matches. A changed page can have complete audit coverage while failing the match check. Clipped content remains marked truncated even when its retained prefix matches. `semantic_verification` remains `not_established`: content equality does not prove relevance, truthful source claims or the task outcome.
 
+Interpret the evidence in separate layers:
+
+| Layer | Inspect | What it establishes |
+| --- | --- | --- |
+| Execution | Run status, error, steps | Whether task execution ended and what failures or actions were recorded |
+| Result delivery | `result_truncated`, result continuations | Whether the complete saved result has been retrieved |
+| Capture coverage | `coverage.text.truncated` and other returned capture limits | Which source content was retained or omitted during extraction |
+| Acquisition readiness | `acquisition.ready` and sampling or timeout diagnostics | Whether the declared readiness observation completed within its limits |
+| Source readback | Matching fields, receipts, observation IDs | Whether selected captured values match their source at the audited observation |
+| Task meaning and source truth | Returned completion evidence and independent source assessment | Whether the requested outcome is supported; equality and schema validity alone do not establish this |
+
+A limited readiness sample can coexist with untruncated final page text. Report the sampling limitation without relabeling that text as truncated. Conversely, a settled sample does not restore content omitted by an extraction limit. A screen frame provides visual evidence for its captured moment, not complete page coverage or proof of persisted changes.
+
 Model-selected results retain their own source provenance. For an explicit single `extract` action with observed mode and a closed one-field string schema named `salary`, the local model can choose up to eight sources to cover all requested pay ranges. Every chosen source is checked together before returning any result. A stale source causes one bounded recapture without replaying browser actions. Unknown, repeated or excluded IDs, ambiguity and over-budget requests fail instead of inventing a salary.
 
 Bounded monetary excerpts expose values beyond a group's opening preview. Each excerpt carries exact offsets into the full retained source. They do not replace the original source or reconstruct pay. Candidate contexts remain separate, all plausible candidates must fit the model message budget, and full selected groups are returned with original wording and units. The single-source behavior for other schemas remains in place.

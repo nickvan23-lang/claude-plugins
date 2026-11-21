@@ -1,6 +1,6 @@
 {
   "name": "wayloom",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Run account-linked browser tasks, read rendered pages, and inspect metered usage and results.",
   "author": { "name": "Nicholas Vandervelden", "url": "https://wayloom.getseekx.com" },
   "homepage": "https://wayloom.getseekx.com",
